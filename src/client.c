@@ -17,23 +17,24 @@ void printRecord(record* rec){
 } 
 
 void delete(CLIENT* clnt){
-   // char name[50];
-   // printf("\nName: ");
-   // fgets(name, 50, stdin);
+   record rec;
+   printf("\nName: ");
+   flush_in();
+   fgets(rec.name, 50, stdin);
 
-   // printf("\nAre you sure you want to delete the record identified by \"%s\"? (Y/N)\n", name);
-   // char checkChar;
-   // scanf("%c", &checkChar);
-   // if(checkChar == 'N' || checkChar == 'n')
-   //    return;
+   printf("\nAre you sure you want to delete the record identified by \"%s\"? (Y/N)\n", rec.name);
+   char checkChar;
+   scanf("%c", &checkChar);
+   if(checkChar == 'N' || checkChar == 'n')
+      return;
 
-   // int* operationStatus;   
-   // operationStatus = delete_1(name, clnt);
-   // if (operationStatus == NULL){
-   //    printf ("delete error: could not communicate with server.\n");
-   //    exit (1);
-   // }else if(!*operationStatus)
-   //    printf("delete error: record not found.\n");
+   int* operationStatus;   
+   operationStatus = delete_1(&rec, clnt);
+   if (operationStatus == NULL){
+      printf ("delete error: could not communicate with server.\n");
+      exit (1);
+   }else if(!*operationStatus)
+      printf("delete error: record not found.\n");
 }
 
 record* read(CLIENT* clnt){
@@ -86,7 +87,6 @@ void update(CLIENT* clnt){
 
          if(option == 2 || option == 3){
             printf("\nphone: ");
-            
             // clear buffer only when changing phone number only
             if(option == 2) 
                flush_in();

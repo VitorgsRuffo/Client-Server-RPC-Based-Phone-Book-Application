@@ -44,7 +44,6 @@ record * read_1_svc (record *argp, struct svc_req *rqstp){
     if(fread(buffer, sizeof(record), databaseSizeInRecords, database) != databaseSizeInRecords)
         return rec;
 
-
     //iterating through buffer in order to find the requested record: 
     //(This is not the most efficient way to do this. Implement the database with a hashfile would make searching faster.)
     for(int i = 0; i<databaseSizeInRecords; i++){
@@ -65,9 +64,8 @@ int* update_1_svc (record *argp, struct svc_req *rqstp){
 
     FILE* database;
     database = fopen("database.bin", "r+b");
-    if(database == NULL){
+    if(database == NULL)
         return operationStatus;
-    }
 
     //calculating database size:
     long databaseSizeInBytes;
@@ -83,26 +81,20 @@ int* update_1_svc (record *argp, struct svc_req *rqstp){
     buffer = (record*) malloc(sizeof(record)*databaseSizeInRecords);
     if (buffer == NULL) {
         fclose(database);
-        *operationStatus = 2;
         return operationStatus;
     }
 
     //copying the file (database) into the memory buffer:
-    if(fread(buffer, sizeof(record), databaseSizeInRecords, database) != databaseSizeInRecords) {
-        *operationStatus = 3;
+    if(fread(buffer, sizeof(record), databaseSizeInRecords, database) != databaseSizeInRecords)
         return operationStatus;
-    }
 
     //iterating through buffer in order to find the requested record: 
     for(int i = 0; i<databaseSizeInRecords; i++){
         if(!strcmp(buffer[i].name, argp->name)){
-            strcpy(buffer[i].name, argp->name);
-            strcpy(buffer[i].address, argp->address);
-            strcpy(buffer[i].phone, argp->phone);
             fseek(database, i*sizeof(record), SEEK_SET);
-            fwrite(buffer[i].name, sizeof(buffer[i].name), 1, database);
-            fwrite(buffer[i].address, sizeof(buffer[i].address), 1, database);
-            fwrite(buffer[i].phone, sizeof(buffer[i].phone), 1, database);
+            fwrite(argp->name, sizeof(buffer[i].name), 1, database);
+            fwrite(argp->address, sizeof(buffer[i].address), 1, database);
+            fwrite(argp->phone, sizeof(buffer[i].phone), 1, database);
             break;
         }
     }
@@ -114,4 +106,49 @@ int* update_1_svc (record *argp, struct svc_req *rqstp){
 
 int* delete_1_svc (record *argp, struct svc_req *rqstp){
 
+    int* operationStatus = (int*) malloc(sizeof(int));
+    *operationStatus = 0;
+
+    FILE* database;
+    database = fopen("database.bin", "r+b");
+    if(database == NULL)
+        return operationStatus;
+
+    //calculating database size:
+    long databaseSizeInBytes;
+    fseek(database, 0, SEEK_END);
+    databaseSizeInBytes = ftell(database);
+    rewind(database);
+
+    long databaseSizeInRecords = databaseSizeInBytes / sizeof(record);
+
+    //allocating memory to contain whole database in memory:
+    //(for the cases where the database is greater than memory this obviously is not going to work)
+    record* buffer;
+    buffer = (record*) malloc(sizeof(record)*databaseSizeInRecords);
+    if (buffer == NULL) {
+        fclose(database);
+        return operationStatus;
+    }
+
+    //copying the file (database) into the memory buffer:
+    if(fread(buffer, sizeof(record), databaseSizeInRecords, database) != databaseSizeInRecords)
+        return operationStatus;
+
+    //iterating through buffer in order to find the requested record: 
+    for(int i = 0; i<databaseSizeInRecords; i++){
+        if(!strcmp(buffer[i].name, argp->name)){
+            record invalidRec;
+            strcpy(invalidRec.name, "invalid"); strcpy(invalidRec.address, "invalid"); strcpy(invalidRec.phone, "invalid");
+            fseek(database, i*sizeof(record), SEEK_SET);
+            fwrite(invalidRec.name, sizeof(buffer[i].name), 1, database);
+            fwrite(invalidRec.address, sizeof(buffer[i].address), 1, database);
+            fwrite(invalidRec.phone, sizeof(buffer[i].phone), 1, database);
+            break;
+        }
+    }
+    
+    fclose(database);
+    *operationStatus = 1;
+    return operationStatus;
 }
