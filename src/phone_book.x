@@ -18,9 +18,9 @@ program PHONE_BOOK
    version PHONE_BOOK_VERSION
    {
      int CREATE (record) = 1;
-     record READ (char*) = 2;
+     record READ (record) = 2;
      int UPDATE (record) = 3;
-     int DELETE (char*) = 4;
+     int DELETE (record) = 4;
    }
    = VERSION_NUMBER;
 }
