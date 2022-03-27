@@ -58,13 +58,58 @@ record * read_1_svc (record *argp, struct svc_req *rqstp){
     return rec;
 }
 
-int * update_1_svc (record *argp, struct svc_req *rqstp){
-
-    printf("%s\n%s\n%s\n", argp->name, argp->address, argp->phone);
+int* update_1_svc (record *argp, struct svc_req *rqstp){
     
-    // pegar contato do parametro
-    // trocar as informações dele de acordo com o que veio no segundo parametro
-    // retornar o contato original
+    int* operationStatus = (int*) malloc(sizeof(int));
+    *operationStatus = 0;
+
+    FILE* database;
+    database = fopen("database.bin", "r+b");
+    if(database == NULL){
+        return operationStatus;
+    }
+
+    //calculating database size:
+    long databaseSizeInBytes;
+    fseek(database, 0, SEEK_END);
+    databaseSizeInBytes = ftell(database);
+    rewind(database);
+
+    long databaseSizeInRecords = databaseSizeInBytes / sizeof(record);
+
+    //allocating memory to contain whole database in memory:
+    //(for the cases where the database is greater than memory this obviously is not going to work)
+    record* buffer;
+    buffer = (record*) malloc(sizeof(record)*databaseSizeInRecords);
+    if (buffer == NULL) {
+        fclose(database);
+        *operationStatus = 2;
+        return operationStatus;
+    }
+
+    //copying the file (database) into the memory buffer:
+    if(fread(buffer, sizeof(record), databaseSizeInRecords, database) != databaseSizeInRecords) {
+        *operationStatus = 3;
+        return operationStatus;
+    }
+
+    //iterating through buffer in order to find the requested record: 
+    for(int i = 0; i<databaseSizeInRecords; i++){
+        if(!strcmp(buffer[i].name, argp->name)){
+            strcpy(buffer[i].name, argp->name);
+            strcpy(buffer[i].address, argp->address);
+            strcpy(buffer[i].phone, argp->phone);
+            fseek(database, i*sizeof(record), SEEK_SET);
+            fwrite(buffer[i].name, sizeof(buffer[i].name), 1, database);
+            fwrite(buffer[i].address, sizeof(buffer[i].address), 1, database);
+            fwrite(buffer[i].phone, sizeof(buffer[i].phone), 1, database);
+            break;
+        }
+    }
+    
+    fclose(database);
+    *operationStatus = 1;
+    return operationStatus;
 }
 
 int* delete_1_svc (record *argp, struct svc_req *rqstp){

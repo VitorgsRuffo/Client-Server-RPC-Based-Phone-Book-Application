@@ -12,8 +12,8 @@ void printRecord(record* rec){
       return;
    }
    printf("\nName: %s", rec->name);
-   printf("\naddress: %s", rec->address);
-   printf("\nphone: %s", rec->phone);
+   printf("address: %s", rec->address);
+   printf("phone: %s\n", rec->phone);
 } 
 
 void delete(CLIENT* clnt){
@@ -55,10 +55,11 @@ record* read(CLIENT* clnt){
 }
 
 void update(CLIENT* clnt){
-   /*record* rec = read(clnt);
+   record* rec = read(clnt);
    if(rec == NULL)
       return;
    
+   printf("-------------------------------------\n");
    printf("Current record state:\n");
    printRecord(rec);
    
@@ -77,27 +78,30 @@ void update(CLIENT* clnt){
          return;
       
       else{
-         
          if(option == 1 || option == 3){
             printf("\naddress: ");
+            flush_in();
             fgets(rec->address, 100, stdin);
          }
 
          if(option == 2 || option == 3){
             printf("\nphone: ");
+            
+            // clear buffer only when changing phone number only
+            if(option == 2) 
+               flush_in();
             fgets(rec->phone, 30, stdin);
          }
       }
-   }while(option < 1 || option > 4);
+   } while(option < 1 || option > 4);
 
    int* operationStatus;
-   operationStatus = update_1(&rec, clnt);
+   operationStatus = update_1(rec, clnt);
    if (operationStatus == NULL){
       printf("update error: could not communicate with server.\n");
       exit(1);
-   }else if(!*operationStatus)
-      printf("update error: could not update record.\n");*/
-
+   }else if(*operationStatus == 0)
+      printf("update error: could not update record.\n");
 }
 
 record createRecord(){
