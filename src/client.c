@@ -29,11 +29,9 @@ void delete(CLIENT* clnt){
       return;
 
    int* operationStatus;   
-   operationStatus = delete_1(&rec, clnt);
-   if (operationStatus == NULL){
-      printf ("delete error: could not communicate with server.\n");
-      exit (1);
-   }else if(!*operationStatus)
+   while((operationStatus = delete_1(&rec, clnt)) == NULL)
+   
+   if(!*operationStatus)
       printf("delete error: record not found.\n");
 }
 
@@ -43,12 +41,11 @@ record* read(CLIENT* clnt){
    flush_in();
    fgets(rec1.name, 50, stdin);
    record* rec2;
-   rec2 = read_1(&rec1, clnt);
-   if (rec2 == NULL){ 
-      printf ("read error:  could not communicate with server.\n");
-      exit(1);
+   while((rec2 = read_1(&rec1, clnt)) == NULL)
 
-   }else if (!strcmp(rec2->name, "error")){
+   flush_in();
+   
+   if (!strcmp(rec2->name, "error")){
       printf("read error: record could not be found.\n");
       return NULL;
    }
@@ -96,11 +93,9 @@ void update(CLIENT* clnt){
    } while(option < 1 || option > 4);
 
    int* operationStatus;
-   operationStatus = update_1(rec, clnt);
-   if (operationStatus == NULL){
-      printf("update error: could not communicate with server.\n");
-      exit(1);
-   }else if(*operationStatus == 0)
+   while((operationStatus = update_1(rec, clnt)) == NULL)
+
+   if(*operationStatus == 0)
       printf("update error: could not update record.\n");
 }
 
@@ -120,11 +115,9 @@ void create(CLIENT* clnt){
    int* operationStatus;
    record rec = createRecord();
    
-   operationStatus = create_1(&rec, clnt);
-   if (operationStatus == NULL){
-      printf ("create error: could not communicate with server.\n");
-      exit (1);
-   }else if(!*operationStatus)
+   while((operationStatus = create_1(&rec, clnt)) == NULL)
+   
+   if(!(*operationStatus))
       printf("create error: could not create new record.\n");
 }
 

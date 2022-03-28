@@ -5,7 +5,14 @@ int * create_1_svc (record *argp, struct svc_req *rqstp){
     int* operationResult = (int*) malloc(sizeof(int));
     *operationResult = 0;
 
+    if (argp == NULL || rqstp == NULL) return operationResult;
+
     FILE* database;
+    
+    database = fopen("database.bin", "ab");
+    if (database == NULL) return operationResult;
+    fclose(database);
+
     database = fopen("database.bin", "r+b");
     if(database == NULL)
         return operationResult;
@@ -35,7 +42,6 @@ int * create_1_svc (record *argp, struct svc_req *rqstp){
     //(This is not the most efficient way to do this. Implement the database with a hashfile would make searching faster.)
     for(int i = 0; i<databaseSizeInRecords; i++){
         if(!strcmp(buffer[i].name, "invalid")){
-            printf("Achou");
             fseek(database, i*sizeof(record), SEEK_SET);
             fwrite(argp, sizeof(buffer[i]), 1, database);
             fclose(database);
@@ -55,6 +61,8 @@ int * create_1_svc (record *argp, struct svc_req *rqstp){
 record * read_1_svc (record *argp, struct svc_req *rqstp){
     record* rec = (record*) malloc(sizeof(record));
     strcpy(rec->name, "error");
+
+    if (argp == NULL || rqstp == NULL) return rec;
 
     FILE* database;
     database = fopen("database.bin", "rb");
@@ -99,6 +107,8 @@ int* update_1_svc (record *argp, struct svc_req *rqstp){
     
     int* operationStatus = (int*) malloc(sizeof(int));
     *operationStatus = 0;
+
+    if (argp == NULL || rqstp == NULL) return operationStatus;
 
     FILE* database;
     database = fopen("database.bin", "r+b");
@@ -146,6 +156,8 @@ int* delete_1_svc (record *argp, struct svc_req *rqstp){
 
     int* operationStatus = (int*) malloc(sizeof(int));
     *operationStatus = 0;
+
+    if (argp == NULL || rqstp == NULL) return operationStatus;
 
     FILE* database;
     database = fopen("database.bin", "r+b");
